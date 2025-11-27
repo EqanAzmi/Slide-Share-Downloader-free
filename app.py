@@ -271,6 +271,8 @@ def create_pdf(images):
             image_bytes_list.append(img_byte_arr.read())
         
         pdf_content = img2pdf.convert(image_bytes_list)
+        if pdf_content is None:
+            return None, "Failed to convert images to PDF"
         pdf_bytes.write(pdf_content)
         pdf_bytes.seek(0)
         
