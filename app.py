@@ -1,9 +1,9 @@
 import os
 import re
 import io
-import tempfile
-import uuid
+import json
 from urllib.parse import urlparse
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from flask import Flask, render_template, request, send_file, jsonify
 import requests
@@ -11,7 +11,7 @@ from bs4 import BeautifulSoup
 from PIL import Image
 import img2pdf
 from pptx import Presentation
-from pptx.util import Inches, Pt
+from pptx.util import Inches
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SESSION_SECRET", "slideshare-downloader-secret-key")
@@ -20,20 +20,19 @@ HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
     'Accept-Language': 'en-US,en;q=0.5',
-    'Accept-Encoding': 'gzip, deflate, br',
     'Connection': 'keep-alive',
-    'Upgrade-Insecure-Requests': '1',
 }
 
 
 def validate_slideshare_url(url):
-    """Validate that the URL is a valid SlideShare URL."""
     if not url:
         return False, "Please provide a URL"
     
     try:
         parsed = urlparse(url)
-        if parsed.netloc not in ['www.slideshare.net', 'slideshare.net', 'pt.slideshare.net', 'de.slideshare.net', 'es.slideshare.net', 'fr.slideshare.net']:
+        valid_domains = ['www.slideshare.net', 'slideshare.net', 'pt.slideshare.net', 
+                         'de.slideshare.net', 'es.slideshare.net', 'fr.slideshare.net']
+        if parsed.netloc not in valid_domains:
             return False, "Please provide a valid SlideShare URL (https://www.slideshare.net/...)"
         if not parsed.path or parsed.path == '/':
             return False, "Invalid SlideShare presentation URL"
@@ -43,42 +42,44 @@ def validate_slideshare_url(url):
 
 
 def extract_slide_images(url):
-    """Extract slide image URLs from a SlideShare presentation."""
     try:
         response = requests.get(url, headers=HEADERS, timeout=30)
         response.raise_for_status()
-        html_content = response.text
-        soup = BeautifulSoup(html_content, 'html.parser')
+        soup = BeautifulSoup(response.text, 'html.parser')
         
-        image_urls = []
-        
-        strategies = [
-            extract_from_picture_tags,
-            extract_from_img_srcset,
-            extract_from_data_attributes,
-            extract_from_script_json,
-            extract_from_meta_tags,
-            extract_from_regex_patterns,
-        ]
-        
-        for strategy in strategies:
+        next_data = soup.select_one('#__NEXT_DATA__')
+        if next_data:
             try:
-                urls = strategy(soup, html_content)
-                if urls and len(urls) > 0:
-                    image_urls = urls
-                    break
-            except Exception:
-                continue
+                data = json.loads(next_data.text)
+                slideshow = data.get('props', {}).get('pageProps', {}).get('slideshow', {})
+                slides = slideshow.get('slides', {})
+                total_slides = slideshow.get('totalSlides', 0)
+                
+                if slides and total_slides > 0:
+                    host = slides.get('host', '')
+                    image_location = slides.get('imageLocation', '')
+                    title = slides.get('title', '')
+                    image_sizes = slides.get('imageSizes', [])
+                    
+                    if host and image_location and title and image_sizes:
+                        best_size = image_sizes[-1] if image_sizes else {'quality': 75, 'width': 2048}
+                        quality = best_size.get('quality', 75)
+                        width = best_size.get('width', 2048)
+                        
+                        image_urls = []
+                        for i in range(1, total_slides + 1):
+                            img_url = f"{host}/{image_location}/{quality}/{title}-{i}-{width}.jpg"
+                            image_urls.append(img_url)
+                        
+                        return image_urls, f"Found {len(image_urls)} slides"
+            except (json.JSONDecodeError, KeyError) as e:
+                pass
         
-        if not image_urls:
-            return None, "Could not find slide images. SlideShare may have changed their format or the presentation may be private."
+        image_urls = extract_images_fallback(soup, response.text)
+        if image_urls:
+            return image_urls, f"Found {len(image_urls)} slides"
         
-        image_urls = clean_and_dedupe_urls(image_urls)
-        
-        if len(image_urls) == 0:
-            return None, "No valid slide images found"
-        
-        return image_urls, f"Found {len(image_urls)} slides"
+        return None, "Could not find slide images. The presentation may be private or SlideShare's format has changed."
         
     except requests.exceptions.Timeout:
         return None, "Request timed out. Please try again."
@@ -88,191 +89,102 @@ def extract_slide_images(url):
         return None, f"Error extracting slides: {str(e)}"
 
 
-def extract_from_picture_tags(soup, html_content):
-    """Extract images from picture/source tags."""
-    urls = []
-    picture_tags = soup.find_all('picture')
-    for picture in picture_tags:
-        sources = picture.find_all('source')
-        for source in sources:
-            srcset = source.get('srcset', '')
-            if srcset and 'slide' in srcset.lower():
-                url = srcset.split(',')[0].split(' ')[0].strip()
-                if url:
-                    urls.append(url)
-    return urls
-
-
-def extract_from_img_srcset(soup, html_content):
-    """Extract images from img srcset attributes."""
-    urls = []
-    images = soup.find_all('img')
-    for img in images:
-        srcset = img.get('srcset', '') or img.get('data-srcset', '')
-        src = img.get('src', '') or img.get('data-src', '')
-        
-        if srcset and ('slide' in srcset.lower() or 'image' in srcset.lower()):
-            parts = srcset.split(',')
-            for part in parts:
-                url = part.strip().split(' ')[0]
-                if url and url.startswith('http'):
-                    urls.append(url)
-        elif src and ('slide' in src.lower() or 'image' in src.lower()):
-            if src.startswith('http'):
-                urls.append(src)
-    return urls
-
-
-def extract_from_data_attributes(soup, html_content):
-    """Extract images from data attributes."""
-    urls = []
-    elements = soup.find_all(attrs={'data-full': True})
-    for elem in elements:
-        url = elem.get('data-full')
-        if url and url.startswith('http'):
-            urls.append(url)
-    
-    elements = soup.find_all(attrs={'data-normal': True})
-    for elem in elements:
-        url = elem.get('data-normal')
-        if url and url.startswith('http'):
-            urls.append(url)
-    
-    return urls
-
-
-def extract_from_script_json(soup, html_content):
-    """Extract images from inline JSON data in script tags."""
+def extract_images_fallback(soup, html_content):
     urls = []
     
     patterns = [
+        r'https://image\.slidesharecdn\.com/[^"\'\s]+/\d+/[^"\'\s]+-\d+-\d+\.jpg',
         r'"slideImageUrl"\s*:\s*"([^"]+)"',
         r'"imageUrl"\s*:\s*"([^"]+)"',
-        r'"full"\s*:\s*"([^"]+)"',
-        r'"normal"\s*:\s*"([^"]+)"',
-        r'"slide_image"\s*:\s*"([^"]+)"',
     ]
     
     for pattern in patterns:
         matches = re.findall(pattern, html_content)
         for match in matches:
             url = match.replace('\\u002F', '/').replace('\\/', '/')
-            if url.startswith('http'):
+            if url.startswith('http') and 'slidesharecdn.com' in url:
                 urls.append(url)
     
-    return urls
-
-
-def extract_from_meta_tags(soup, html_content):
-    """Extract images from meta tags."""
-    urls = []
-    meta_tags = soup.find_all('meta', property=re.compile('og:image'))
-    for meta in meta_tags:
-        content = meta.get('content', '')
-        if content and content.startswith('http'):
-            urls.append(content)
-    return urls
-
-
-def extract_from_regex_patterns(soup, html_content):
-    """Extract images using regex patterns as fallback."""
-    urls = []
-    
-    patterns = [
-        r'https?://[^"\'\s]+\.(?:jpg|jpeg|png|webp)(?:\?[^"\'\s]*)?',
-        r'https?://image\.slidesharecdn\.com/[^"\'\s]+',
-        r'https?://cdn\.slidesharecdn\.com/[^"\'\s]+\.(?:jpg|jpeg|png)',
-    ]
-    
-    for pattern in patterns:
-        matches = re.findall(pattern, html_content, re.IGNORECASE)
-        for url in matches:
-            if 'slide' in url.lower() or 'image' in url.lower():
+    images = soup.find_all('img')
+    for img in images:
+        for attr in ['src', 'data-src', 'data-full', 'data-normal']:
+            url = img.get(attr, '')
+            if url and 'slidesharecdn.com' in url and url.startswith('http'):
                 urls.append(url)
     
-    return urls
-
-
-def clean_and_dedupe_urls(urls):
-    """Clean and deduplicate image URLs, preferring highest quality."""
     seen = set()
     cleaned = []
-    
     for url in urls:
-        url = url.replace('\\u002F', '/').replace('\\/', '/')
-        
-        base_url = re.sub(r'\?.*$', '', url)
-        
-        if base_url in seen:
-            continue
-        
-        if not url.startswith('http'):
-            continue
-            
-        if 'avatar' in url.lower() or 'profile' in url.lower() or 'logo' in url.lower():
-            continue
-        
-        seen.add(base_url)
-        cleaned.append(url)
+        base = re.sub(r'\?.*$', '', url)
+        if base not in seen and 'avatar' not in url.lower() and 'profile' not in url.lower():
+            seen.add(base)
+            cleaned.append(url)
     
-    def get_slide_number(url):
-        match = re.search(r'[-_](\d+)[-_\.]', url)
-        if match:
-            return int(match.group(1))
-        return 0
+    def get_slide_num(u):
+        match = re.search(r'-(\d+)-\d+\.jpg', u)
+        return int(match.group(1)) if match else 0
     
-    cleaned.sort(key=get_slide_number)
-    
+    cleaned.sort(key=get_slide_num)
     return cleaned
 
 
+def download_single_image(args):
+    url, index = args
+    try:
+        response = requests.get(url, headers=HEADERS, timeout=15)
+        response.raise_for_status()
+        
+        img = Image.open(io.BytesIO(response.content))
+        
+        if img.mode in ('RGBA', 'LA', 'P'):
+            background = Image.new('RGB', img.size, (255, 255, 255))
+            if img.mode == 'P':
+                img = img.convert('RGBA')
+            if img.mode == 'RGBA':
+                background.paste(img, mask=img.split()[-1])
+            else:
+                background.paste(img)
+            img = background
+        elif img.mode != 'RGB':
+            img = img.convert('RGB')
+        
+        return (index, img, None)
+    except Exception as e:
+        return (index, None, str(e))
+
+
 def download_images(image_urls):
-    """Download images from URLs and return as PIL Image objects."""
-    images = []
+    images = [None] * len(image_urls)
     
-    for url in image_urls:
-        try:
-            response = requests.get(url, headers=HEADERS, timeout=30)
-            response.raise_for_status()
-            
-            img = Image.open(io.BytesIO(response.content))
-            
-            if img.mode in ('RGBA', 'LA', 'P'):
-                background = Image.new('RGB', img.size, (255, 255, 255))
-                if img.mode == 'P':
-                    img = img.convert('RGBA')
-                background.paste(img, mask=img.split()[-1] if img.mode == 'RGBA' else None)
-                img = background
-            elif img.mode != 'RGB':
-                img = img.convert('RGB')
-            
-            images.append(img)
-            
-        except Exception as e:
-            print(f"Failed to download image {url}: {str(e)}")
-            continue
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        futures = {executor.submit(download_single_image, (url, i)): i 
+                   for i, url in enumerate(image_urls)}
+        
+        for future in as_completed(futures):
+            index, img, error = future.result()
+            if img:
+                images[index] = img
     
-    return images
+    return [img for img in images if img is not None]
 
 
 def create_pdf(images):
-    """Create a PDF from a list of PIL Image objects."""
     if not images:
         return None, "No images to convert"
     
     try:
-        pdf_bytes = io.BytesIO()
-        
         image_bytes_list = []
         for img in images:
             img_byte_arr = io.BytesIO()
-            img.save(img_byte_arr, format='JPEG', quality=95)
+            img.save(img_byte_arr, format='JPEG', quality=90)
             img_byte_arr.seek(0)
             image_bytes_list.append(img_byte_arr.read())
         
         pdf_content = img2pdf.convert(image_bytes_list)
         if pdf_content is None:
             return None, "Failed to convert images to PDF"
+        
+        pdf_bytes = io.BytesIO()
         pdf_bytes.write(pdf_content)
         pdf_bytes.seek(0)
         
@@ -283,7 +195,6 @@ def create_pdf(images):
 
 
 def create_pptx(images):
-    """Create a PPTX from a list of PIL Image objects."""
     if not images:
         return None, "No images to convert"
     
@@ -330,13 +241,11 @@ def create_pptx(images):
 
 @app.route('/')
 def index():
-    """Render the main page."""
     return render_template('index.html')
 
 
 @app.route('/download', methods=['POST'])
 def download():
-    """Handle the download request."""
     try:
         data = request.get_json()
         url = data.get('url', '').strip()
@@ -358,7 +267,8 @@ def download():
             return jsonify({'success': False, 'error': 'Failed to download slide images'}), 400
         
         parsed_url = urlparse(url)
-        filename_base = parsed_url.path.split('/')[-1] or 'presentation'
+        path_parts = [p for p in parsed_url.path.split('/') if p]
+        filename_base = path_parts[-1] if path_parts else 'presentation'
         filename_base = re.sub(r'[^\w\-]', '_', filename_base)
         
         if format_type == 'pdf':
@@ -390,7 +300,6 @@ def download():
 
 @app.route('/health')
 def health():
-    """Health check endpoint."""
     return jsonify({'status': 'healthy'})
 
 
