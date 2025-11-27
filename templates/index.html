@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SlideShare Downloader - Download as PDF or PPTX</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>SlideShare Downloader</h1>
+            <p class="subtitle">Download any SlideShare presentation as PDF or PPTX</p>
+        </header>
+
+        <main>
+            <form id="download-form" class="download-form">
+                <div class="input-group">
+                    <label for="url">SlideShare URL</label>
+                    <input 
+                        type="url" 
+                        id="url" 
+                        name="url" 
+                        placeholder="https://www.slideshare.net/username/presentation-name"
+                        required
+                    >
+                </div>
+
+                <div class="input-group">
+                    <label for="format">Download Format</label>
+                    <select id="format" name="format">
+                        <option value="pdf">PDF Document</option>
+                        <option value="pptx">PowerPoint (PPTX)</option>
+                    </select>
+                </div>
+
+                <button type="submit" id="download-btn" class="download-btn">
+                    <span class="btn-text">Download Presentation</span>
+                    <span class="btn-loading" style="display: none;">
+                        <span class="spinner"></span>
+                        Processing...
+                    </span>
+                </button>
+            </form>
+
+            <div id="status" class="status" style="display: none;">
+                <div class="status-content">
+                    <span class="status-icon"></span>
+                    <span class="status-message"></span>
+                </div>
+            </div>
+        </main>
+
+        <section class="faq">
+            <h2>Frequently Asked Questions</h2>
+            
+            <div class="faq-item">
+                <h3>How does this tool work?</h3>
+                <p>Simply paste a SlideShare presentation URL, select your preferred format (PDF or PPTX), and click download. The tool will extract all slides and convert them into your chosen format.</p>
+            </div>
+
+            <div class="faq-item">
+                <h3>What URLs are supported?</h3>
+                <p>This tool supports public SlideShare presentations with URLs like: <code>https://www.slideshare.net/username/presentation-name</code></p>
+            </div>
+
+            <div class="faq-item">
+                <h3>What's the difference between PDF and PPTX?</h3>
+                <p><strong>PDF:</strong> Best for viewing and sharing. Slides are converted to high-quality images in a single document.<br>
+                <strong>PPTX:</strong> Best for editing. Each slide is placed on a separate PowerPoint slide, ready for further modifications.</p>
+            </div>
+
+            <div class="faq-item">
+                <h3>Why might a download fail?</h3>
+                <p>Downloads may fail if the presentation is private, requires login, or if SlideShare has changed their website structure. Try refreshing the page and trying again.</p>
+            </div>
+
+            <div class="faq-item">
+                <h3>Is this tool free?</h3>
+                <p>Yes, this tool is completely free to use. There are no hidden costs or limitations on the number of downloads.</p>
+            </div>
+        </section>
+
+        <footer>
+            <p>SlideShare Downloader - For educational purposes only. Please respect copyright and the original authors' rights.</p>
+        </footer>
+    </div>
+
+    <script>
+        const form = document.getElementById('download-form');
+        const downloadBtn = document.getElementById('download-btn');
+        const btnText = downloadBtn.querySelector('.btn-text');
+        const btnLoading = downloadBtn.querySelector('.btn-loading');
+        const statusDiv = document.getElementById('status');
+        const statusContent = statusDiv.querySelector('.status-content');
+        const statusIcon = statusDiv.querySelector('.status-icon');
+        const statusMessage = statusDiv.querySelector('.status-message');
+
+        function showStatus(message, type) {
+            statusDiv.style.display = 'block';
+            statusDiv.className = `status ${type}`;
+            statusMessage.textContent = message;
+            
+            if (type === 'success') {
+                statusIcon.textContent = '✓';
+            } else if (type === 'error') {
+                statusIcon.textContent = '✕';
+            } else {
+                statusIcon.textContent = 'ℹ';
+            }
+        }
+
+        function setLoading(isLoading) {
+            downloadBtn.disabled = isLoading;
+            btnText.style.display = isLoading ? 'none' : 'inline';
+            btnLoading.style.display = isLoading ? 'inline-flex' : 'none';
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const url = document.getElementById('url').value.trim();
+            const format = document.getElementById('format').value;
+
+            if (!url) {
+                showStatus('Please enter a SlideShare URL', 'error');
+                return;
+            }
+
+            setLoading(true);
+            showStatus('Fetching presentation... This may take a moment.', 'info');
+
+            try {
+                const response = await fetch('/download', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ url, format }),
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Download failed');
+                }
+
+                const blob = await response.blob();
+                const contentDisposition = response.headers.get('content-disposition');
+                let filename = `presentation.${format}`;
+                
+                if (contentDisposition) {
+                    const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+                    if (filenameMatch && filenameMatch[1]) {
+                        filename = filenameMatch[1].replace(/['"]/g, '');
+                    }
+                }
+
+                const downloadUrl = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = downloadUrl;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(downloadUrl);
+
+                showStatus(`Successfully downloaded ${filename}!`, 'success');
+            } catch (error) {
+                showStatus(error.message || 'An error occurred while downloading', 'error');
+            } finally {
+                setLoading(false);
+            }
+        });
+    </script>
+</body>
+</html>
