@@ -69,32 +69,31 @@ def extract_slide_images(url):
                     image_sizes = slides.get('imageSizes', [])
                     
                     if host and image_location and title and image_sizes:
-                        mid_idx = len(image_sizes) // 2
-                        best_size = image_sizes[mid_idx] if len(image_sizes) > 2 else image_sizes[-1]
-                        quality = best_size.get('quality', 75)
-                        width = best_size.get('width', 1024)
+                        best_size = image_sizes[-1]
+                        quality = best_size.get('quality', 100)
+                        width = best_size.get('width', 1280)
                         
                         image_urls = []
                         for i in range(1, total_slides + 1):
                             img_url = f"{host}/{image_location}/{quality}/{title}-{i}-{width}.jpg"
                             image_urls.append(img_url)
                         
-                        return image_urls, f"Found {len(image_urls)} slides"
+                        return image_urls, title, f"Found {len(image_urls)} slides"
             except (json.JSONDecodeError, KeyError):
                 pass
         
         image_urls = extract_images_fallback(soup, response.text)
         if image_urls:
-            return image_urls, f"Found {len(image_urls)} slides"
+            return image_urls, "presentation", f"Found {len(image_urls)} slides"
         
-        return None, "Could not find slide images. The presentation may be private or SlideShare's format has changed."
+        return None, None, "Could not find slide images. The presentation may be private or SlideShare's format has changed."
         
     except requests.exceptions.Timeout:
-        return None, "Request timed out. Please try again."
+        return None, None, "Request timed out. Please try again."
     except requests.exceptions.RequestException as e:
-        return None, f"Failed to fetch presentation: {str(e)}"
+        return None, None, f"Failed to fetch presentation: {str(e)}"
     except Exception as e:
-        return None, f"Error extracting slides: {str(e)}"
+        return None, None, f"Error extracting slides: {str(e)}"
 
 
 def extract_images_fallback(soup, html_content):
@@ -433,7 +432,7 @@ def download():
         if format_type not in ['pdf', 'pptx']:
             return jsonify({'success': False, 'error': 'Invalid format. Choose PDF or PPTX'}), 400
         
-        image_urls, extract_message = extract_slide_images(url)
+        image_urls, title, extract_message = extract_slide_images(url)
         if not image_urls:
             return jsonify({'success': False, 'error': extract_message}), 400
         
@@ -441,10 +440,8 @@ def download():
         if not image_bytes_list:
             return jsonify({'success': False, 'error': 'Failed to download slide images'}), 400
         
-        parsed_url = urlparse(url)
-        path_parts = [p for p in parsed_url.path.split('/') if p]
-        filename_base = path_parts[-1] if path_parts else 'presentation'
-        filename_base = re.sub(r'[^\w\-]', '_', filename_base)
+        filename_base = title if title else 'presentation'
+        filename_base = re.sub(r'[^\w\-\s]', '_', filename_base.strip())[:100]
         
         if format_type == 'pdf':
             file_bytes, create_message = create_pdf_fast(image_bytes_list)
