@@ -17,6 +17,9 @@ from pptx.util import Inches
 app = Flask(__name__)
 app.secret_key = os.environ.get("SESSION_SECRET", "slideshare-downloader-secret-key")
 
+SITE_DOMAIN = "slidesharedownloaderfree.com"
+SITE_URL = f"https://{SITE_DOMAIN}"
+
 SESSION = requests.Session()
 SESSION.headers.update({
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
@@ -255,7 +258,11 @@ def create_pptx_fast(image_bytes_list):
 
 @app.context_processor
 def inject_globals():
-    return {'current_year': datetime.now().year}
+    return {
+        'current_year': datetime.now().year,
+        'site_domain': SITE_DOMAIN,
+        'site_url': SITE_URL
+    }
 
 
 BLOG_ARTICLES = {
@@ -395,27 +402,27 @@ def sitemap():
     
     for page in pages:
         xml += '  <url>\n'
-        xml += f'    <loc>{{request.host_url.rstrip("/")}}{page["loc"]}</loc>\n'
+        xml += f'    <loc>{SITE_URL}{page["loc"]}</loc>\n'
         xml += f'    <changefreq>{page["changefreq"]}</changefreq>\n'
         xml += f'    <priority>{page["priority"]}</priority>\n'
         xml += '  </url>\n'
     
     xml += '</urlset>'
     
-    return Response(xml.replace('{request.host_url.rstrip("/")}', request.host_url.rstrip('/')), mimetype='application/xml')
+    return Response(xml, mimetype='application/xml')
 
 
 @app.route('/robots.txt')
 def robots():
-    content = """User-agent: *
+    content = f"""User-agent: *
 Allow: /
 
-Sitemap: {host}sitemap.xml
+Sitemap: {SITE_URL}/sitemap.xml
 
 User-agent: *
 Disallow: /download
 """
-    return Response(content.replace('{host}', request.host_url), mimetype='text/plain')
+    return Response(content, mimetype='text/plain')
 
 
 @app.route('/download', methods=['POST'])

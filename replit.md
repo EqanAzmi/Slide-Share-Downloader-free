@@ -80,16 +80,17 @@ A professional Flask web application that allows users to download SlideShare pr
 The application runs on port 5000 with the command: `python app.py`
 
 ## Recent Changes
+- 2025-11-27: Updated all URLs across website to use actual domain slidesharedownloaderfree.com
+- 2025-11-27: Added HD quality downloads (1280px width, 100% quality) for better presentation clarity
+- 2025-11-27: Fixed filenames to use actual presentation titles instead of URL slugs
+- 2025-11-27: Updated sitemap.xml and robots.txt to use production domain
+- 2025-11-27: Updated all contact emails (dmca@, privacy@, legal@) to slidesharedownloaderfree.com
 - 2025-11-27: Complete UI redesign with professional modern design
 - 2025-11-27: Added navigation menu and comprehensive footer
 - 2025-11-27: Created DMCA, Terms, Privacy Policy, Disclaimer pages
 - 2025-11-27: Added Blog section with articles and internal linking
 - 2025-11-27: Implemented SEO optimization (meta tags, structured data)
-- 2025-11-27: Added sitemap.xml and robots.txt
 - 2025-11-27: Made tool AdSense-ready with ad placeholders
-- 2025-11-27: Major performance optimization - downloads under 1 second
-- 2025-11-27: Added WebP image support for PDF and PPTX formats
-- 2025-11-27: Uses __NEXT_DATA__ JSON extraction for reliable downloads
 - 2025-11-27: Initial creation with core features
 
 ## Known Limitations
