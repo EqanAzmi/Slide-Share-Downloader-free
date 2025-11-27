@@ -16,11 +16,17 @@ from pptx.util import Inches
 app = Flask(__name__)
 app.secret_key = os.environ.get("SESSION_SECRET", "slideshare-downloader-secret-key")
 
+SESSION = requests.Session()
+SESSION.headers.update({
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    'Accept': 'image/webp,image/apng,image/*,*/*;q=0.8',
+    'Accept-Language': 'en-US,en;q=0.5',
+    'Connection': 'keep-alive',
+})
+
 HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-    'Accept-Language': 'en-US,en;q=0.5',
-    'Connection': 'keep-alive',
 }
 
 
@@ -43,7 +49,7 @@ def validate_slideshare_url(url):
 
 def extract_slide_images(url):
     try:
-        response = requests.get(url, headers=HEADERS, timeout=30)
+        response = requests.get(url, headers=HEADERS, timeout=20)
         response.raise_for_status()
         soup = BeautifulSoup(response.text, 'html.parser')
         
@@ -62,9 +68,10 @@ def extract_slide_images(url):
                     image_sizes = slides.get('imageSizes', [])
                     
                     if host and image_location and title and image_sizes:
-                        best_size = image_sizes[-1] if image_sizes else {'quality': 75, 'width': 2048}
+                        mid_idx = len(image_sizes) // 2
+                        best_size = image_sizes[mid_idx] if len(image_sizes) > 2 else image_sizes[-1]
                         quality = best_size.get('quality', 75)
-                        width = best_size.get('width', 2048)
+                        width = best_size.get('width', 1024)
                         
                         image_urls = []
                         for i in range(1, total_slides + 1):
@@ -72,7 +79,7 @@ def extract_slide_images(url):
                             image_urls.append(img_url)
                         
                         return image_urls, f"Found {len(image_urls)} slides"
-            except (json.JSONDecodeError, KeyError) as e:
+            except (json.JSONDecodeError, KeyError):
                 pass
         
         image_urls = extract_images_fallback(soup, response.text)
@@ -95,7 +102,6 @@ def extract_images_fallback(soup, html_content):
     patterns = [
         r'https://image\.slidesharecdn\.com/[^"\'\s]+/\d+/[^"\'\s]+-\d+-\d+\.jpg',
         r'"slideImageUrl"\s*:\s*"([^"]+)"',
-        r'"imageUrl"\s*:\s*"([^"]+)"',
     ]
     
     for pattern in patterns:
@@ -105,18 +111,11 @@ def extract_images_fallback(soup, html_content):
             if url.startswith('http') and 'slidesharecdn.com' in url:
                 urls.append(url)
     
-    images = soup.find_all('img')
-    for img in images:
-        for attr in ['src', 'data-src', 'data-full', 'data-normal']:
-            url = img.get(attr, '')
-            if url and 'slidesharecdn.com' in url and url.startswith('http'):
-                urls.append(url)
-    
     seen = set()
     cleaned = []
     for url in urls:
         base = re.sub(r'\?.*$', '', url)
-        if base not in seen and 'avatar' not in url.lower() and 'profile' not in url.lower():
+        if base not in seen and 'avatar' not in url.lower():
             seen.add(base)
             cleaned.append(url)
     
@@ -131,56 +130,55 @@ def extract_images_fallback(soup, html_content):
 def download_single_image(args):
     url, index = args
     try:
-        response = requests.get(url, headers=HEADERS, timeout=15)
+        response = SESSION.get(url, timeout=10)
         response.raise_for_status()
-        
-        img = Image.open(io.BytesIO(response.content))
-        
-        if img.mode in ('RGBA', 'LA', 'P'):
-            background = Image.new('RGB', img.size, (255, 255, 255))
-            if img.mode == 'P':
-                img = img.convert('RGBA')
-            if img.mode == 'RGBA':
-                background.paste(img, mask=img.split()[-1])
-            else:
-                background.paste(img)
-            img = background
-        elif img.mode != 'RGB':
-            img = img.convert('RGB')
-        
-        return (index, img, None)
+        return (index, response.content, None)
     except Exception as e:
         return (index, None, str(e))
 
 
-def download_images(image_urls):
-    images = [None] * len(image_urls)
+def download_images_fast(image_urls):
+    results = [None] * len(image_urls)
     
-    with ThreadPoolExecutor(max_workers=10) as executor:
+    with ThreadPoolExecutor(max_workers=20) as executor:
         futures = {executor.submit(download_single_image, (url, i)): i 
                    for i, url in enumerate(image_urls)}
         
         for future in as_completed(futures):
-            index, img, error = future.result()
-            if img:
-                images[index] = img
+            index, img_bytes, error = future.result()
+            if img_bytes:
+                results[index] = img_bytes
     
-    return [img for img in images if img is not None]
+    return [b for b in results if b is not None]
 
 
-def create_pdf(images):
-    if not images:
+def create_pdf_fast(image_bytes_list):
+    if not image_bytes_list:
         return None, "No images to convert"
     
     try:
-        image_bytes_list = []
-        for img in images:
-            img_byte_arr = io.BytesIO()
-            img.save(img_byte_arr, format='JPEG', quality=90)
-            img_byte_arr.seek(0)
-            image_bytes_list.append(img_byte_arr.read())
+        processed_images = []
+        for img_bytes in image_bytes_list:
+            img = Image.open(io.BytesIO(img_bytes))
+            if img.format == 'WEBP' or img.mode not in ('RGB', 'L'):
+                if img.mode in ('RGBA', 'LA', 'P'):
+                    background = Image.new('RGB', img.size, (255, 255, 255))
+                    if img.mode == 'P':
+                        img = img.convert('RGBA')
+                    if img.mode in ('RGBA', 'LA'):
+                        background.paste(img, mask=img.split()[-1])
+                    else:
+                        background.paste(img)
+                    img = background
+                else:
+                    img = img.convert('RGB')
+                out = io.BytesIO()
+                img.save(out, format='JPEG', quality=90)
+                processed_images.append(out.getvalue())
+            else:
+                processed_images.append(img_bytes)
         
-        pdf_content = img2pdf.convert(image_bytes_list)
+        pdf_content = img2pdf.convert(processed_images)
         if pdf_content is None:
             return None, "Failed to convert images to PDF"
         
@@ -194,40 +192,56 @@ def create_pdf(images):
         return None, f"Failed to create PDF: {str(e)}"
 
 
-def create_pptx(images):
-    if not images:
+def create_pptx_fast(image_bytes_list):
+    if not image_bytes_list:
         return None, "No images to convert"
     
     try:
         prs = Presentation()
         prs.slide_width = Inches(13.333)
         prs.slide_height = Inches(7.5)
-        
         blank_layout = prs.slide_layouts[6]
         
-        for img in images:
+        slide_width = 13.333
+        slide_height = 7.5
+        slide_aspect = slide_width / slide_height
+        
+        for img_bytes in image_bytes_list:
             slide = prs.slides.add_slide(blank_layout)
             
-            img_byte_arr = io.BytesIO()
-            img.save(img_byte_arr, format='PNG')
-            img_byte_arr.seek(0)
-            
+            img = Image.open(io.BytesIO(img_bytes))
             img_width, img_height = img.size
             img_aspect = img_width / img_height
-            slide_aspect = 13.333 / 7.5
+            
+            if img.format == 'WEBP' or img.mode not in ('RGB', 'L'):
+                if img.mode in ('RGBA', 'LA', 'P'):
+                    background = Image.new('RGB', img.size, (255, 255, 255))
+                    if img.mode == 'P':
+                        img = img.convert('RGBA')
+                    if img.mode in ('RGBA', 'LA'):
+                        background.paste(img, mask=img.split()[-1])
+                    else:
+                        background.paste(img)
+                    img = background
+                else:
+                    img = img.convert('RGB')
+            
+            img_stream = io.BytesIO()
+            img.save(img_stream, format='JPEG', quality=85)
+            img_stream.seek(0)
             
             if img_aspect > slide_aspect:
-                width = Inches(13.333)
-                height = Inches(13.333 / img_aspect)
+                width = Inches(slide_width)
+                height = Inches(slide_width / img_aspect)
                 left = Inches(0)
-                top = Inches((7.5 - 13.333 / img_aspect) / 2)
+                top = Inches((slide_height - slide_width / img_aspect) / 2)
             else:
-                height = Inches(7.5)
-                width = Inches(7.5 * img_aspect)
-                left = Inches((13.333 - 7.5 * img_aspect) / 2)
+                height = Inches(slide_height)
+                width = Inches(slide_height * img_aspect)
+                left = Inches((slide_width - slide_height * img_aspect) / 2)
                 top = Inches(0)
             
-            slide.shapes.add_picture(img_byte_arr, left, top, width, height)
+            slide.shapes.add_picture(img_stream, left, top, width, height)
         
         pptx_bytes = io.BytesIO()
         prs.save(pptx_bytes)
@@ -262,8 +276,8 @@ def download():
         if not image_urls:
             return jsonify({'success': False, 'error': extract_message}), 400
         
-        images = download_images(image_urls)
-        if not images:
+        image_bytes_list = download_images_fast(image_urls)
+        if not image_bytes_list:
             return jsonify({'success': False, 'error': 'Failed to download slide images'}), 400
         
         parsed_url = urlparse(url)
@@ -272,7 +286,7 @@ def download():
         filename_base = re.sub(r'[^\w\-]', '_', filename_base)
         
         if format_type == 'pdf':
-            file_bytes, create_message = create_pdf(images)
+            file_bytes, create_message = create_pdf_fast(image_bytes_list)
             if not file_bytes:
                 return jsonify({'success': False, 'error': create_message}), 500
             
@@ -283,7 +297,7 @@ def download():
                 download_name=f'{filename_base}.pdf'
             )
         else:
-            file_bytes, create_message = create_pptx(images)
+            file_bytes, create_message = create_pptx_fast(image_bytes_list)
             if not file_bytes:
                 return jsonify({'success': False, 'error': create_message}), 500
             

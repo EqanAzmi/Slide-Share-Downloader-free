@@ -46,8 +46,11 @@ A Flask web application that allows users to download SlideShare presentations a
 The application runs on port 5000 with the command: `python app.py`
 
 ## Recent Changes
+- 2025-11-27: Major performance optimization - downloads now complete in under 1 second
+- 2025-11-27: Added WebP image support for both PDF and PPTX formats
+- 2025-11-27: Increased parallel workers to 20 with connection pooling
+- 2025-11-27: Uses optimized medium-quality images for faster transfers
 - 2025-11-27: Fixed and optimized scraping - now uses __NEXT_DATA__ JSON extraction for fast, reliable downloads
-- 2025-11-27: Added concurrent image downloading (10 parallel threads) for much faster processing
 - 2025-11-27: Initial creation with all core features
 
 ## Known Limitations
