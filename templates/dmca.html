@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}DMCA Policy - SlideShare Downloader{% endblock %}
+{% block description %}DMCA takedown policy for SlideShare Downloader. Learn how to report copyright infringement and our procedures for handling DMCA notices.{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <nav class="breadcrumb">
+            <a href="{{ url_for('index') }}">Home</a>
+            <span>/</span>
+            <span>DMCA Policy</span>
+        </nav>
+        <h1>DMCA Policy</h1>
+        <p>Digital Millennium Copyright Act Notice and Takedown Procedures</p>
+    </div>
+</div>
+
+<section class="section">
+    <div class="container">
+        <div class="legal-content content-section">
+            <p><strong>Last Updated:</strong> November 2024</p>
+            
+            <h2>Introduction</h2>
+            <p>SlideShare Downloader respects the intellectual property rights of others and expects our users to do the same. In accordance with the Digital Millennium Copyright Act of 1998 ("DMCA"), we will respond expeditiously to claims of copyright infringement that are reported to us.</p>
+            
+            <h2>How Our Service Works</h2>
+            <p>SlideShare Downloader is a tool that allows users to download publicly accessible presentations from SlideShare.net for personal, educational use. Our service:</p>
+            <ul>
+                <li>Does not host, store, or distribute any copyrighted content</li>
+                <li>Only processes publicly available presentations</li>
+                <li>Converts content in real-time without permanent storage</li>
+                <li>Is intended for legitimate personal and educational purposes</li>
+            </ul>
+            
+            <h2>DMCA Takedown Notice</h2>
+            <p>If you are a copyright owner, or authorized to act on behalf of one, and you believe that your copyrighted work is being infringed upon through our service, please submit a DMCA takedown notice with the following information:</p>
+            <ol>
+                <li>A physical or electronic signature of a person authorized to act on behalf of the owner of the copyright that has been allegedly infringed</li>
+                <li>Identification of the copyrighted work claimed to have been infringed</li>
+                <li>Identification of the material that is claimed to be infringing, including the URL or other specific location on our service</li>
+                <li>Contact information including your address, telephone number, and email address</li>
+                <li>A statement that you have a good faith belief that the disputed use is not authorized by the copyright owner, its agent, or the law</li>
+                <li>A statement, made under penalty of perjury, that the information in the notice is accurate and that you are the copyright owner or authorized to act on the owner's behalf</li>
+            </ol>
+            
+            <h2>Counter-Notification</h2>
+            <p>If you believe that content was removed or access was disabled by mistake or misidentification, you may file a counter-notification with the following information:</p>
+            <ol>
+                <li>Your physical or electronic signature</li>
+                <li>Identification of the material that was removed or disabled and where it appeared before removal</li>
+                <li>A statement under penalty of perjury that you have a good faith belief the material was removed by mistake or misidentification</li>
+                <li>Your name, address, telephone number, and a statement consenting to the jurisdiction of the federal court in your district</li>
+            </ol>
+            
+            <h2>Repeat Infringers</h2>
+            <p>SlideShare Downloader will, in appropriate circumstances, disable and/or terminate the accounts of users who are repeat infringers of copyrighted content.</p>
+            
+            <h2>Contact Information</h2>
+            <p>To submit a DMCA notice or counter-notification, please contact us at:</p>
+            <p><strong>Email:</strong> dmca@slidesharedownloader.com</p>
+            
+            <h2>Important Notes</h2>
+            <ul>
+                <li>This service is provided for personal and educational use only</li>
+                <li>Users are responsible for ensuring they have the right to download content</li>
+                <li>We encourage all users to respect copyright and intellectual property rights</li>
+                <li>For content hosted on SlideShare itself, please contact SlideShare/Scribd directly</li>
+            </ul>
+            
+            <h2>Related Policies</h2>
+            <p>Please also review our <a href="{{ url_for('terms') }}">Terms of Service</a>, <a href="{{ url_for('privacy') }}">Privacy Policy</a>, and <a href="{{ url_for('disclaimer') }}">Disclaimer</a> for additional information about using our service.</p>
+        </div>
+    </div>
+</section>
+{% endblock %}

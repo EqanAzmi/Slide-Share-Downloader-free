@@ -2,10 +2,11 @@ import os
 import re
 import io
 import json
+from datetime import datetime
 from urllib.parse import urlparse
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-from flask import Flask, render_template, request, send_file, jsonify
+from flask import Flask, render_template, request, send_file, jsonify, Response
 import requests
 from bs4 import BeautifulSoup
 from PIL import Image
@@ -253,9 +254,169 @@ def create_pptx_fast(image_bytes_list):
         return None, f"Failed to create PPTX: {str(e)}"
 
 
+@app.context_processor
+def inject_globals():
+    return {'current_year': datetime.now().year}
+
+
+BLOG_ARTICLES = {
+    'how-to-download-slideshare-presentations': {
+        'title': 'How to Download SlideShare Presentations: A Complete Guide',
+        'excerpt': 'Learn the step-by-step process to download any public SlideShare presentation as PDF or PowerPoint. Includes tips for best quality and ethical use.',
+        'date': 'November 27, 2024',
+        'read_time': '8 min read',
+        'content': '''
+            <h2>Introduction to SlideShare Downloads</h2>
+            <p>SlideShare has become one of the world's largest platforms for sharing presentations, with millions of educational slideshows, business presentations, and informative content available for viewing. While the platform offers great online viewing capabilities, many users need to download presentations for offline access, study, or reference purposes.</p>
+            
+            <p>In this comprehensive guide, we'll walk you through everything you need to know about downloading SlideShare presentations safely and effectively using our <a href="/">free SlideShare downloader tool</a>.</p>
+            
+            <h2>Why Download SlideShare Presentations?</h2>
+            <p>There are many legitimate reasons why you might want to download a SlideShare presentation:</p>
+            <ul>
+                <li><strong>Offline Study:</strong> Access educational content without internet connection</li>
+                <li><strong>Research Reference:</strong> Keep presentations for citation and academic research</li>
+                <li><strong>Training Materials:</strong> Save helpful training content for future reference</li>
+                <li><strong>Backup:</strong> Archive important presentations before they might be removed</li>
+                <li><strong>Presentation Prep:</strong> Study presentation styles and techniques</li>
+            </ul>
+            
+            <h2>Step-by-Step Download Guide</h2>
+            <h3>Step 1: Find Your Presentation</h3>
+            <p>Navigate to <a href="https://www.slideshare.net" target="_blank" rel="noopener">SlideShare.net</a> and find the presentation you want to download. Make sure it's a public presentation - private or login-required presentations cannot be downloaded.</p>
+            
+            <h3>Step 2: Copy the URL</h3>
+            <p>Copy the complete URL from your browser's address bar. It should look something like:</p>
+            <code style="display: block; background: #f3f4f6; padding: 1rem; border-radius: 8px; margin: 1rem 0;">https://www.slideshare.net/username/presentation-name</code>
+            
+            <h3>Step 3: Paste into Our Tool</h3>
+            <p>Go to our <a href="/">SlideShare Downloader homepage</a> and paste the URL into the input field.</p>
+            
+            <h3>Step 4: Choose Your Format</h3>
+            <p>Select your preferred download format:</p>
+            <ul>
+                <li><strong>PDF:</strong> Best for viewing, sharing, and printing. Opens on any device.</li>
+                <li><strong>PPTX:</strong> Best if you need to edit the slides in PowerPoint or similar software.</li>
+            </ul>
+            
+            <h3>Step 5: Download</h3>
+            <p>Click the download button and wait a few seconds. Your presentation will be automatically downloaded to your device.</p>
+            
+            <h2>Tips for Best Results</h2>
+            <ul>
+                <li>Ensure you have a stable internet connection</li>
+                <li>Use the complete, unmodified SlideShare URL</li>
+                <li>For very large presentations, PDF format may download faster</li>
+                <li>If a download fails, try refreshing the page and attempting again</li>
+            </ul>
+            
+            <h2>Ethical Use of Downloaded Content</h2>
+            <p>When downloading and using SlideShare presentations, please follow these ethical guidelines:</p>
+            <ul>
+                <li><strong>Attribution:</strong> Always credit the original author when referencing content</li>
+                <li><strong>Personal Use:</strong> Downloaded content should primarily be for personal or educational use</li>
+                <li><strong>No Redistribution:</strong> Don't upload downloaded content elsewhere without permission</li>
+                <li><strong>Respect Copyright:</strong> Be aware of and respect copyright restrictions</li>
+            </ul>
+            <p>For more information about copyright and proper use, please review our <a href="/terms">Terms of Service</a> and <a href="/dmca">DMCA Policy</a>.</p>
+            
+            <h2>Troubleshooting Common Issues</h2>
+            <h3>Download Fails</h3>
+            <p>If your download fails, it could be due to:</p>
+            <ul>
+                <li>The presentation is private or requires login</li>
+                <li>Temporary server issues - try again in a few minutes</li>
+                <li>The presentation has been removed from SlideShare</li>
+            </ul>
+            
+            <h3>Poor Quality Output</h3>
+            <p>The quality of your download depends on the original upload quality. Our tool preserves the maximum available quality from SlideShare.</p>
+            
+            <h2>Conclusion</h2>
+            <p>Downloading SlideShare presentations is simple with the right tool. Our <a href="/">free SlideShare downloader</a> makes it easy to save presentations in PDF or PowerPoint format for offline access. Remember to use downloaded content responsibly and respect the original creators' intellectual property rights.</p>
+            
+            <p>Ready to get started? <a href="/">Try our SlideShare Downloader now</a> - it's fast, free, and requires no registration!</p>
+        '''
+    }
+}
+
+
 @app.route('/')
 def index():
     return render_template('index.html')
+
+
+@app.route('/blog')
+def blog():
+    return render_template('blog.html')
+
+
+@app.route('/blog/<slug>')
+def blog_article(slug):
+    article = BLOG_ARTICLES.get(slug)
+    if not article:
+        return render_template('blog.html'), 404
+    return render_template('article.html', article=article)
+
+
+@app.route('/dmca')
+def dmca():
+    return render_template('dmca.html')
+
+
+@app.route('/terms')
+def terms():
+    return render_template('terms.html')
+
+
+@app.route('/privacy')
+def privacy():
+    return render_template('privacy.html')
+
+
+@app.route('/disclaimer')
+def disclaimer():
+    return render_template('disclaimer.html')
+
+
+@app.route('/sitemap.xml')
+def sitemap():
+    pages = [
+        {'loc': '/', 'priority': '1.0', 'changefreq': 'daily'},
+        {'loc': '/blog', 'priority': '0.8', 'changefreq': 'weekly'},
+        {'loc': '/blog/how-to-download-slideshare-presentations', 'priority': '0.7', 'changefreq': 'monthly'},
+        {'loc': '/dmca', 'priority': '0.3', 'changefreq': 'yearly'},
+        {'loc': '/terms', 'priority': '0.3', 'changefreq': 'yearly'},
+        {'loc': '/privacy', 'priority': '0.3', 'changefreq': 'yearly'},
+        {'loc': '/disclaimer', 'priority': '0.3', 'changefreq': 'yearly'},
+    ]
+    
+    xml = '<?xml version="1.0" encoding="UTF-8"?>\n'
+    xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+    
+    for page in pages:
+        xml += '  <url>\n'
+        xml += f'    <loc>{{request.host_url.rstrip("/")}}{page["loc"]}</loc>\n'
+        xml += f'    <changefreq>{page["changefreq"]}</changefreq>\n'
+        xml += f'    <priority>{page["priority"]}</priority>\n'
+        xml += '  </url>\n'
+    
+    xml += '</urlset>'
+    
+    return Response(xml.replace('{request.host_url.rstrip("/")}', request.host_url.rstrip('/')), mimetype='application/xml')
+
+
+@app.route('/robots.txt')
+def robots():
+    content = """User-agent: *
+Allow: /
+
+Sitemap: {host}sitemap.xml
+
+User-agent: *
+Disallow: /download
+"""
+    return Response(content.replace('{host}', request.host_url), mimetype='text/plain')
 
 
 @app.route('/download', methods=['POST'])

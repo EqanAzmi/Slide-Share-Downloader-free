@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block title %}Privacy Policy - SlideShare Downloader{% endblock %}
+{% block description %}Privacy Policy for SlideShare Downloader. Learn how we collect, use, and protect your information when using our SlideShare download service.{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <nav class="breadcrumb">
+            <a href="{{ url_for('index') }}">Home</a>
+            <span>/</span>
+            <span>Privacy Policy</span>
+        </nav>
+        <h1>Privacy Policy</h1>
+        <p>Your privacy is important to us</p>
+    </div>
+</div>
+
+<section class="section">
+    <div class="container">
+        <div class="legal-content content-section">
+            <p><strong>Last Updated:</strong> November 2024</p>
+            <p><strong>Effective Date:</strong> November 2024</p>
+            
+            <h2>Introduction</h2>
+            <p>SlideShare Downloader ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, and safeguard your information when you use our website and services.</p>
+            
+            <h2>Information We Collect</h2>
+            
+            <h3>Information You Provide</h3>
+            <p>When you use our service, you provide:</p>
+            <ul>
+                <li><strong>SlideShare URLs:</strong> The presentation URLs you submit for downloading. These URLs are processed in real-time and are not stored permanently.</li>
+            </ul>
+            
+            <h3>Automatically Collected Information</h3>
+            <p>When you visit our website, we may automatically collect:</p>
+            <ul>
+                <li><strong>Log Data:</strong> IP address, browser type, operating system, referring URLs, pages visited, and access times</li>
+                <li><strong>Device Information:</strong> Device type, screen resolution, and language preferences</li>
+                <li><strong>Cookies:</strong> Small text files stored on your device to improve your experience</li>
+            </ul>
+            
+            <h2>How We Use Your Information</h2>
+            <p>We use the collected information to:</p>
+            <ul>
+                <li>Provide and maintain our service</li>
+                <li>Process your download requests</li>
+                <li>Improve and optimize our website</li>
+                <li>Analyze usage patterns and trends</li>
+                <li>Prevent abuse and ensure security</li>
+                <li>Comply with legal obligations</li>
+            </ul>
+            
+            <h2>Information We Do NOT Collect</h2>
+            <p>We want to be clear about what we don't do:</p>
+            <ul>
+                <li>We do NOT require registration or account creation</li>
+                <li>We do NOT collect personal identification information (name, email, etc.)</li>
+                <li>We do NOT store the presentations you download</li>
+                <li>We do NOT track individual user download history</li>
+                <li>We do NOT sell or share your data with third parties for marketing</li>
+            </ul>
+            
+            <h2>Cookies and Tracking Technologies</h2>
+            <p>We use cookies and similar technologies for:</p>
+            <ul>
+                <li><strong>Essential Cookies:</strong> Required for the website to function properly</li>
+                <li><strong>Analytics Cookies:</strong> Help us understand how visitors interact with our site</li>
+                <li><strong>Advertising Cookies:</strong> May be used by third-party advertisers (Google AdSense)</li>
+            </ul>
+            <p>You can control cookie preferences through your browser settings. Disabling cookies may affect your experience on our site.</p>
+            
+            <h2>Third-Party Services</h2>
+            <p>Our service may use third-party services that collect information:</p>
+            
+            <h3>Google Analytics</h3>
+            <p>We may use Google Analytics to analyze website traffic. Google Analytics uses cookies to collect anonymous usage data. For more information, see <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google's Privacy Policy</a>.</p>
+            
+            <h3>Google AdSense</h3>
+            <p>We may display advertisements through Google AdSense. Google may use cookies to serve personalized ads based on your browsing history. You can opt out of personalized advertising at <a href="https://www.google.com/settings/ads" target="_blank" rel="noopener">Google's Ad Settings</a>.</p>
+            
+            <h2>Data Security</h2>
+            <p>We implement appropriate security measures to protect your information:</p>
+            <ul>
+                <li>HTTPS encryption for all data transmission</li>
+                <li>Regular security updates and monitoring</li>
+                <li>Limited data retention policies</li>
+                <li>No permanent storage of download requests</li>
+            </ul>
+            <p>However, no internet transmission is 100% secure. We cannot guarantee absolute security.</p>
+            
+            <h2>Data Retention</h2>
+            <p>We follow a minimal data retention approach:</p>
+            <ul>
+                <li><strong>Download requests:</strong> Processed in real-time and immediately discarded</li>
+                <li><strong>Server logs:</strong> Retained for a limited period for security purposes</li>
+                <li><strong>Analytics data:</strong> Aggregated and anonymized for trend analysis</li>
+            </ul>
+            
+            <h2>Your Rights</h2>
+            <p>Depending on your location, you may have the right to:</p>
+            <ul>
+                <li>Access information we hold about you</li>
+                <li>Request correction of inaccurate data</li>
+                <li>Request deletion of your data</li>
+                <li>Opt out of certain data processing</li>
+                <li>Withdraw consent where applicable</li>
+            </ul>
+            
+            <h2>Children's Privacy</h2>
+            <p>Our service is not intended for children under 13 years of age. We do not knowingly collect personal information from children. If you believe a child has provided us with personal information, please contact us.</p>
+            
+            <h2>International Users</h2>
+            <p>Our service may be accessed from various countries. By using our service, you consent to the transfer and processing of information in accordance with this policy.</p>
+            
+            <h2>Changes to This Policy</h2>
+            <p>We may update this Privacy Policy periodically. Changes will be posted on this page with an updated "Last Updated" date. Continued use of the service constitutes acceptance of the updated policy.</p>
+            
+            <h2>Contact Us</h2>
+            <p>If you have questions or concerns about this Privacy Policy, please contact us at:</p>
+            <p><strong>Email:</strong> privacy@slidesharedownloader.com</p>
+            
+            <h2>Related Policies</h2>
+            <p>Please also review our <a href="{{ url_for('terms') }}">Terms of Service</a>, <a href="{{ url_for('dmca') }}">DMCA Policy</a>, and <a href="{{ url_for('disclaimer') }}">Disclaimer</a>.</p>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    
+    <title>{% block title %}SlideShare Downloader - Download SlideShare as PDF or PPTX Free{% endblock %}</title>
+    <meta name="description" content="{% block description %}Free online SlideShare downloader. Convert and download any SlideShare presentation to PDF or PowerPoint (PPTX) format instantly. Fast, free, and no registration required.{% endblock %}">
+    <meta name="keywords" content="slideshare downloader, download slideshare, slideshare to pdf, slideshare to pptx, convert slideshare, free slideshare downloader, presentation downloader">
+    <meta name="author" content="SlideShare Downloader">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="{{ request.url }}">
+    
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="{% block og_title %}SlideShare Downloader - Free PDF & PPTX Download{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}Download any SlideShare presentation as PDF or PowerPoint. Free, fast, and easy to use.{% endblock %}">
+    <meta property="og:site_name" content="SlideShare Downloader">
+    
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="SlideShare Downloader - Free PDF & PPTX Download">
+    <meta name="twitter:description" content="Download any SlideShare presentation as PDF or PowerPoint. Free, fast, and easy to use.">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    
+    {% block schema %}
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "SlideShare Downloader",
+        "url": "{{ request.host_url }}",
+        "description": "Free online tool to download SlideShare presentations as PDF or PowerPoint files",
+        "applicationCategory": "UtilityApplication",
+        "operatingSystem": "Web Browser",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+        }
+    }
+    </script>
+    {% endblock %}
+    
+    {% block head_extra %}{% endblock %}
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="{{ url_for('index') }}" class="nav-logo">
+                <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="12" y1="18" x2="12" y2="12"></line>
+                    <line x1="9" y1="15" x2="15" y2="15"></line>
+                </svg>
+                <span>SlideShare Downloader</span>
+            </a>
+            
+            <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            
+            <ul class="nav-menu" id="navMenu">
+                <li><a href="{{ url_for('index') }}" class="{% if request.endpoint == 'index' %}active{% endif %}">Home</a></li>
+                <li><a href="{{ url_for('blog') }}" class="{% if request.endpoint == 'blog' %}active{% endif %}">Blog</a></li>
+                <li><a href="{{ url_for('dmca') }}" class="{% if request.endpoint == 'dmca' %}active{% endif %}">DMCA</a></li>
+                <li><a href="{{ url_for('terms') }}" class="{% if request.endpoint == 'terms' %}active{% endif %}">Terms</a></li>
+                <li><a href="{{ url_for('privacy') }}" class="{% if request.endpoint == 'privacy' %}active{% endif %}">Privacy</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-grid">
+                <div class="footer-section">
+                    <h3>SlideShare Downloader</h3>
+                    <p>The fastest and most reliable way to download SlideShare presentations as PDF or PowerPoint files. 100% free, no registration required.</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="{{ url_for('index') }}">Home</a></li>
+                        <li><a href="{{ url_for('index') }}#how-it-works">How It Works</a></li>
+                        <li><a href="{{ url_for('index') }}#features">Features</a></li>
+                        <li><a href="{{ url_for('index') }}#faq">FAQ</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Resources</h4>
+                    <ul>
+                        <li><a href="{{ url_for('blog') }}">Blog</a></li>
+                        <li><a href="{{ url_for('blog_article', slug='how-to-download-slideshare-presentations') }}">Download Guide</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Legal</h4>
+                    <ul>
+                        <li><a href="{{ url_for('dmca') }}">DMCA Policy</a></li>
+                        <li><a href="{{ url_for('terms') }}">Terms of Service</a></li>
+                        <li><a href="{{ url_for('privacy') }}">Privacy Policy</a></li>
+                        <li><a href="{{ url_for('disclaimer') }}">Disclaimer</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; {{ current_year }} SlideShare Downloader. All rights reserved. For educational purposes only.</p>
+                <p class="footer-note">This tool is not affiliated with LinkedIn or SlideShare. Please respect copyright and the original authors' rights.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.getElementById('navToggle').addEventListener('click', function() {
+            document.getElementById('navMenu').classList.toggle('active');
+            this.classList.toggle('active');
+        });
+    </script>
+    
+    {% block scripts %}{% endblock %}
+</body>
+</html>

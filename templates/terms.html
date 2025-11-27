@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}Terms of Service - SlideShare Downloader{% endblock %}
+{% block description %}Terms of Service for SlideShare Downloader. Read our terms and conditions for using the SlideShare presentation download tool.{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <nav class="breadcrumb">
+            <a href="{{ url_for('index') }}">Home</a>
+            <span>/</span>
+            <span>Terms of Service</span>
+        </nav>
+        <h1>Terms of Service</h1>
+        <p>Please read these terms carefully before using our service</p>
+    </div>
+</div>
+
+<section class="section">
+    <div class="container">
+        <div class="legal-content content-section">
+            <p><strong>Last Updated:</strong> November 2024</p>
+            <p><strong>Effective Date:</strong> November 2024</p>
+            
+            <h2>1. Acceptance of Terms</h2>
+            <p>By accessing or using SlideShare Downloader ("the Service"), you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our service.</p>
+            
+            <h2>2. Description of Service</h2>
+            <p>SlideShare Downloader is a free online tool that allows users to download publicly available presentations from SlideShare.net in PDF or PowerPoint (PPTX) format. The service is provided for personal and educational purposes only.</p>
+            
+            <h2>3. User Responsibilities</h2>
+            <p>By using our service, you agree to:</p>
+            <ul>
+                <li>Use the service only for lawful purposes</li>
+                <li>Not infringe upon any third-party copyrights or intellectual property rights</li>
+                <li>Use downloaded content for personal, non-commercial purposes only</li>
+                <li>Respect the rights of content creators and original authors</li>
+                <li>Provide proper attribution when using downloaded content</li>
+                <li>Not redistribute, sell, or commercially exploit downloaded content</li>
+                <li>Not attempt to circumvent any technical measures or access restrictions</li>
+            </ul>
+            
+            <h2>4. Intellectual Property</h2>
+            <p>The content downloaded through our service belongs to its respective copyright owners. SlideShare Downloader does not claim ownership of any third-party content. Users are solely responsible for ensuring they have the right to download and use any content.</p>
+            
+            <h2>5. Prohibited Uses</h2>
+            <p>You may not use our service to:</p>
+            <ul>
+                <li>Download private or access-restricted presentations</li>
+                <li>Violate copyright laws or intellectual property rights</li>
+                <li>Engage in any illegal activities</li>
+                <li>Attempt to access our systems or networks without authorization</li>
+                <li>Interfere with or disrupt the service</li>
+                <li>Use automated systems or bots to access the service excessively</li>
+                <li>Redistribute or sell downloaded content</li>
+            </ul>
+            
+            <h2>6. Disclaimer of Warranties</h2>
+            <p>THE SERVICE IS PROVIDED "AS IS" AND "AS AVAILABLE" WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED. We do not guarantee that:</p>
+            <ul>
+                <li>The service will be uninterrupted or error-free</li>
+                <li>Downloads will always be successful</li>
+                <li>The quality of downloaded content will meet your expectations</li>
+                <li>Any errors in the service will be corrected</li>
+            </ul>
+            
+            <h2>7. Limitation of Liability</h2>
+            <p>TO THE MAXIMUM EXTENT PERMITTED BY LAW, SlideShare Downloader shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including but not limited to:</p>
+            <ul>
+                <li>Loss of data or content</li>
+                <li>Loss of profits or business opportunities</li>
+                <li>Copyright infringement claims arising from user actions</li>
+                <li>Any damages resulting from use of the service</li>
+            </ul>
+            
+            <h2>8. Indemnification</h2>
+            <p>You agree to indemnify and hold harmless SlideShare Downloader, its operators, and affiliates from any claims, damages, losses, or expenses arising from your use of the service or violation of these terms.</p>
+            
+            <h2>9. Third-Party Content</h2>
+            <p>Our service allows downloading of content from SlideShare.net, a third-party platform. We are not affiliated with SlideShare, LinkedIn, or Scribd. Users should also comply with SlideShare's terms of service when using our tool.</p>
+            
+            <h2>10. Service Modifications</h2>
+            <p>We reserve the right to:</p>
+            <ul>
+                <li>Modify or discontinue the service at any time without notice</li>
+                <li>Update these terms at any time</li>
+                <li>Limit access to the service for any reason</li>
+            </ul>
+            
+            <h2>11. Privacy</h2>
+            <p>Your use of the service is also governed by our <a href="{{ url_for('privacy') }}">Privacy Policy</a>. Please review it to understand how we handle user information.</p>
+            
+            <h2>12. DMCA Compliance</h2>
+            <p>We comply with the Digital Millennium Copyright Act. For copyright concerns, please see our <a href="{{ url_for('dmca') }}">DMCA Policy</a>.</p>
+            
+            <h2>13. Governing Law</h2>
+            <p>These terms shall be governed by and construed in accordance with applicable laws, without regard to conflict of law principles.</p>
+            
+            <h2>14. Severability</h2>
+            <p>If any provision of these terms is found to be invalid or unenforceable, the remaining provisions shall continue in full force and effect.</p>
+            
+            <h2>15. Contact Information</h2>
+            <p>For questions about these Terms of Service, please contact us at:</p>
+            <p><strong>Email:</strong> legal@slidesharedownloader.com</p>
+            
+            <h2>16. Changes to Terms</h2>
+            <p>We may update these terms from time to time. Continued use of the service after changes constitutes acceptance of the new terms. We encourage you to review these terms periodically.</p>
+        </div>
+    </div>
+</section>
+{% endblock %}

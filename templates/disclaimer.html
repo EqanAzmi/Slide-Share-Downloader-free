@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block title %}Disclaimer - SlideShare Downloader{% endblock %}
+{% block description %}Legal disclaimer for SlideShare Downloader. Important information about service limitations, liability, and proper use of our SlideShare download tool.{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <nav class="breadcrumb">
+            <a href="{{ url_for('index') }}">Home</a>
+            <span>/</span>
+            <span>Disclaimer</span>
+        </nav>
+        <h1>Disclaimer</h1>
+        <p>Important legal information about using our service</p>
+    </div>
+</div>
+
+<section class="section">
+    <div class="container">
+        <div class="legal-content content-section">
+            <p><strong>Last Updated:</strong> November 2024</p>
+            
+            <h2>General Disclaimer</h2>
+            <p>The information and services provided by SlideShare Downloader are for general informational and educational purposes only. By using this website and service, you acknowledge and agree to the following disclaimers.</p>
+            
+            <h2>No Affiliation</h2>
+            <p>SlideShare Downloader is an independent service and is NOT affiliated with, endorsed by, or connected to:</p>
+            <ul>
+                <li>SlideShare</li>
+                <li>LinkedIn Corporation</li>
+                <li>Scribd, Inc.</li>
+                <li>Any other third-party platform or company</li>
+            </ul>
+            <p>SlideShare is a trademark of LinkedIn Corporation. All other trademarks mentioned on this site are the property of their respective owners.</p>
+            
+            <h2>Service Availability</h2>
+            <p>We provide this service on an "as is" and "as available" basis. We make no guarantees that:</p>
+            <ul>
+                <li>The service will always be available or uninterrupted</li>
+                <li>All SlideShare presentations can be downloaded</li>
+                <li>Downloads will always be successful</li>
+                <li>The service will remain free indefinitely</li>
+                <li>The output quality will meet all expectations</li>
+            </ul>
+            
+            <h2>Technical Limitations</h2>
+            <p>Our service has certain technical limitations:</p>
+            <ul>
+                <li><strong>Private Content:</strong> We cannot download private, password-protected, or login-required presentations</li>
+                <li><strong>Format Changes:</strong> Changes to SlideShare's website structure may temporarily affect our service</li>
+                <li><strong>File Size:</strong> Very large presentations may take longer to process</li>
+                <li><strong>Quality:</strong> Downloaded content quality depends on the original upload quality</li>
+            </ul>
+            
+            <h2>Copyright and Intellectual Property</h2>
+            <p><strong>IMPORTANT:</strong> Downloaded content remains the intellectual property of its original creators. Users are solely responsible for:</p>
+            <ul>
+                <li>Ensuring they have the right to download and use content</li>
+                <li>Complying with copyright laws in their jurisdiction</li>
+                <li>Respecting Creative Commons and other license terms</li>
+                <li>Providing proper attribution when required</li>
+                <li>Not infringing on third-party intellectual property rights</li>
+            </ul>
+            <p>We strongly encourage ethical use of downloaded content. See our <a href="{{ url_for('dmca') }}">DMCA Policy</a> for copyright-related matters.</p>
+            
+            <h2>User Responsibility</h2>
+            <p>You are solely responsible for:</p>
+            <ul>
+                <li>How you use downloaded content</li>
+                <li>Ensuring compliance with applicable laws</li>
+                <li>Any consequences of your use of our service</li>
+                <li>Verifying the accuracy and suitability of downloaded content</li>
+            </ul>
+            
+            <h2>Limitation of Liability</h2>
+            <p>TO THE FULLEST EXTENT PERMITTED BY LAW:</p>
+            <ul>
+                <li>We shall not be liable for any direct, indirect, incidental, special, consequential, or exemplary damages</li>
+                <li>We shall not be liable for any loss of data, profits, goodwill, or other intangible losses</li>
+                <li>We shall not be liable for any copyright infringement claims resulting from user actions</li>
+                <li>We shall not be liable for any damages resulting from the use or inability to use our service</li>
+            </ul>
+            
+            <h2>Accuracy of Information</h2>
+            <p>While we strive to provide accurate information:</p>
+            <ul>
+                <li>We make no warranties about the completeness, reliability, or accuracy of information on this site</li>
+                <li>Any reliance on information provided is at your own risk</li>
+                <li>Information may become outdated without notice</li>
+            </ul>
+            
+            <h2>External Links</h2>
+            <p>Our website may contain links to third-party websites. We are not responsible for:</p>
+            <ul>
+                <li>The content, accuracy, or opinions expressed on linked sites</li>
+                <li>Privacy practices of linked sites</li>
+                <li>Products or services offered by linked sites</li>
+            </ul>
+            
+            <h2>Advertisements</h2>
+            <p>Our website may display advertisements from third-party networks. We are not responsible for the content of these advertisements or the products/services advertised.</p>
+            
+            <h2>Intended Use</h2>
+            <p>This service is intended for:</p>
+            <ul>
+                <li>Personal, non-commercial use</li>
+                <li>Educational and research purposes</li>
+                <li>Downloading public, freely accessible content</li>
+                <li>Offline viewing and reference</li>
+            </ul>
+            <p>This service is NOT intended for:</p>
+            <ul>
+                <li>Commercial redistribution of content</li>
+                <li>Circumventing access restrictions</li>
+                <li>Any illegal activities</li>
+                <li>Violating copyright or other intellectual property rights</li>
+            </ul>
+            
+            <h2>Changes to Disclaimer</h2>
+            <p>We reserve the right to modify this disclaimer at any time. Changes will be effective immediately upon posting to this page.</p>
+            
+            <h2>Contact</h2>
+            <p>If you have questions about this disclaimer, please contact us at:</p>
+            <p><strong>Email:</strong> info@slidesharedownloader.com</p>
+            
+            <h2>Related Policies</h2>
+            <p>Please also review our <a href="{{ url_for('terms') }}">Terms of Service</a>, <a href="{{ url_for('privacy') }}">Privacy Policy</a>, and <a href="{{ url_for('dmca') }}">DMCA Policy</a> for complete information about using our service.</p>
+        </div>
+    </div>
+</section>
+{% endblock %}
