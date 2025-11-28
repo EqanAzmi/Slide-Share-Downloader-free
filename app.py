@@ -387,42 +387,22 @@ def disclaimer():
 
 @app.route('/sitemap.xml')
 def sitemap():
-    pages = [
-        {'loc': '/', 'priority': '1.0', 'changefreq': 'daily'},
-        {'loc': '/blog', 'priority': '0.8', 'changefreq': 'weekly'},
-        {'loc': '/blog/how-to-download-slideshare-presentations', 'priority': '0.7', 'changefreq': 'monthly'},
-        {'loc': '/dmca', 'priority': '0.3', 'changefreq': 'yearly'},
-        {'loc': '/terms', 'priority': '0.3', 'changefreq': 'yearly'},
-        {'loc': '/privacy', 'priority': '0.3', 'changefreq': 'yearly'},
-        {'loc': '/disclaimer', 'priority': '0.3', 'changefreq': 'yearly'},
-    ]
-    
-    xml = '<?xml version="1.0" encoding="UTF-8"?>\n'
-    xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
-    
-    for page in pages:
-        xml += '  <url>\n'
-        xml += f'    <loc>{SITE_URL}{page["loc"]}</loc>\n'
-        xml += f'    <changefreq>{page["changefreq"]}</changefreq>\n'
-        xml += f'    <priority>{page["priority"]}</priority>\n'
-        xml += '  </url>\n'
-    
-    xml += '</urlset>'
-    
-    return Response(xml, mimetype='application/xml')
+    try:
+        with open('sitemap.xml', 'r') as f:
+            content = f.read()
+        return Response(content, mimetype='application/xml')
+    except FileNotFoundError:
+        return "Sitemap not found", 404
 
 
 @app.route('/robots.txt')
 def robots():
-    content = f"""User-agent: *
-Allow: /
-
-Sitemap: {SITE_URL}/sitemap.xml
-
-User-agent: *
-Disallow: /download
-"""
-    return Response(content, mimetype='text/plain')
+    try:
+        with open('robots.txt', 'r') as f:
+            content = f.read()
+        return Response(content, mimetype='text/plain')
+    except FileNotFoundError:
+        return "Robots.txt not found", 404
 
 
 @app.route('/download', methods=['POST'])

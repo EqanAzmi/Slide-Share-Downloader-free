@@ -18,6 +18,8 @@ A professional Flask web application that allows users to download SlideShare pr
 .
 ├── app.py                    # Flask backend with scraping, conversion, and routes
 ├── requirements.txt          # Python dependencies
+├── sitemap.xml               # XML sitemap for search engines
+├── robots.txt                # Robots file for crawlers
 ├── templates/
 │   ├── base.html             # Base template with nav/footer
 │   ├── index.html            # Homepage with download tool
@@ -80,6 +82,12 @@ A professional Flask web application that allows users to download SlideShare pr
 The application runs on port 5000 with the command: `python app.py`
 
 ## Recent Changes
+- 2025-11-28: Created separate sitemap.xml and robots.txt files
+  - Moved from dynamic generation to separate files in project root
+  - sitemap.xml: XML file with all pages, priorities, and change frequencies
+  - robots.txt: Configuration file for search engine crawlers
+  - Modified app.py routes to read from files instead of generating dynamically
+  - Files now easier to update and maintain
 - 2025-11-28: Complete SEO optimization with canonical tags and comprehensive internal linking hub
   - Added hardcoded canonical tags with domain slidesharedownloaderfree.com across all pages (homepage, blog, legal pages, articles)
   - Created "Explore More" section on homepage linking to entire website
