@@ -3,6 +3,10 @@
 {% block title %}{{ article.title }} - SlideShare Downloader Blog{% endblock %}
 {% block description %}{{ article.excerpt }}{% endblock %}
 
+{% block head_extra %}
+<link rel="canonical" href="https://slidesharedownloaderfree.com/blog/{{ slug }}">
+{% endblock %}
+
 {% block schema %}
 <script type="application/ld+json">
 {
